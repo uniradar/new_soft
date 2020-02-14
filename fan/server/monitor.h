@@ -18,12 +18,11 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#define MAXLISTEN   10
 #define PORT        9969
 
 using namespace std;
 
-enum e_Type {HEART, OTHER};
+enum e_Type {HEART, INFO, OTHER};
  
 struct s_PACKET_HEAD
 {
@@ -32,13 +31,15 @@ struct s_PACKET_HEAD
 };
 
 struct s_moudleDate{
+    s_PACKET_HEAD head;
     int PID;
-    char createTime[14];    //格式为MM-DD HH:MM:SS共14位
+    char createTime[19];    //格式为MM-DD HH:MM:SS共14位
     int state;
     char moudleName[64];
     int fd;
+    char date[256];
 };
- 
+
 void* heartListen(void* arg);
 
 class moudleList
@@ -79,7 +80,6 @@ private:
     fd_set masterSet;
     fd_set workingSet;
     map<int, pair<string, int> > mmap;
-
 };
 
 #endif

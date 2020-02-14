@@ -19,20 +19,22 @@ using namespace std;
 
 void* sendHeart(void* arg);
 
-struct s_moudleDate{
-    int PID;
-    char createTime[14];    //格式为MM-DD HH:MM:SS共14位
-    int state;
-    char moudleName[64];
-    int fd;
-};
-
-enum e_Type {HEART, OTHER};
+enum e_Type {HEART, INFO , OTHER};
 
 struct s_PACKET_HEAD
 {
     e_Type type;
     int length;
+};
+
+struct s_moudleDate{
+    s_PACKET_HEAD head;
+    int PID;
+    char createTime[19];    //格式为MM-DD HH:MM:SS共14位
+    int state;
+    char moudleName[64];
+    int fd;
+    char date[256];
 };
 
 class connectMonitor
@@ -43,9 +45,9 @@ public:
     ~connectMonitor();
 
     void getInfo();
-    int sendInfo();
+    int sendInfo(string date);
     int sendNormalExit();
-
+    void initializeMoudleDate(s_moudleDate* moudledate);
     //心跳包相关
     void connectServer();
     void startJump();
@@ -55,10 +57,11 @@ private:
 
     //心跳包相关
     int sockfd;
+    bool isSendInfo;
     sockaddr_in serverAddress;
     socklen_t serverAddressLen;
 
-    s_moudleDate moudleDate;
+    s_moudleDate moudledate;
 
 };
 

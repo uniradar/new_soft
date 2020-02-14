@@ -8,6 +8,11 @@ moudleList::~moudleList()
 {
 }
 
+int moudleList::addItem(s_moudleDate moudleDate)
+{
+    cout<<"add a new item."<<endl;
+}
+
 server::server(int port)
 {
     list=new moudleList;
@@ -30,7 +35,7 @@ server::server(int port)
 
 server::~server()
 {
-
+    delete list;
 }
 
 void server::Bind()
@@ -75,7 +80,7 @@ void server::Accept()
     FD_SET(new_fd, &masterSet);
     if(new_fd > maxfd)
     {
-        cout<<"Too many accepted!"<<endl;
+        maxfd=new_fd;
     }
 }
 
@@ -87,18 +92,33 @@ void server::Recv(int nums)
         {
             bool closeConn = false;  // 标记当前连接是否断开了
  
-            s_PACKET_HEAD head;
-            recv(fd, &head, sizeof(head), 0);   // 先接受包头
+            s_moudleDate *tmp=new s_moudleDate;
+            recv(fd, tmp, sizeof(*tmp), 0);   // 先接受包头
  
-            if(head.type == HEART)
+            if(tmp->head.type == HEART)
             {
                 mmap[fd].second = 0;        // 每次收到心跳包，count置0
                 cout << "Received heart-beat from client.\n";
             }
+            else if(tmp->head.type==INFO)
+            {
+                list->addItem(*tmp);
+            }   
             else
             {
-                // 数据包，通过head.length确认数据包长度 
-            }   
+                cout<<"date:"<<tmp->date<<endl;
+
+                /*cout<<"------------------------"<<endl;
+                cout<<tmp->createTime<<endl;
+                cout<<tmp->fd<<endl;
+                cout<<tmp->head.length<<endl;
+                cout<<tmp->head.type<<endl;
+                cout<<tmp->moudleName<<endl;
+                cout<<tmp->PID<<endl;
+                cout<<tmp->state<<endl;*/
+
+            }
+            
  
             if(closeConn)  // 当前这个连接有问题，关闭它
             {
@@ -110,6 +130,7 @@ void server::Recv(int nums)
                         --maxfd;
                 }
             }
+            delete tmp;
         }
     }   
 }
@@ -161,6 +182,7 @@ void* heartListen(void* arg)
     server* s = (server*)arg;
     while(1)
     {
+        //接收心跳
         map<int, pair<string, int> >::iterator it = s->mmap.begin();
         for( ; it!=s->mmap.end(); )
         {   
@@ -190,5 +212,6 @@ void* heartListen(void* arg)
             }
         }
         sleep(3);   // 定时三秒
+
     }
 }
